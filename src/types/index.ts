@@ -33,6 +33,20 @@ export interface Job {
     budget: Money;
     clientId: ID;
     status: JobStatus;
+    category?: string;
+}
+
+export interface Course {
+  code: string;
+  title: string;
+  units: number;
+  semester: string;
+}
+
+export interface Category {
+  code: string;
+  name: string;
+  description: string;
 }
 
 export type UserDoc = Omit<User, "id"> & {
@@ -43,4 +57,16 @@ export type JobDoc = Omit<Job, "id" | "clientId"> & {
   clientId: Types.ObjectId;
 };
 
-export type NewJobBody = Pick<Job, "title" | "description" | "budget" | "status">;
+export type CourseDoc = Pick<
+  Course,
+  "code" | "title" | "units" | "semester"
+>;
+
+export type CategoryDoc = Pick<
+  Category,
+  "code" | "name" | "description"
+>;
+
+export type NewJobBody = Pick<Job, "title" | "description" | "budget" | "status"> & {
+  category?: string;
+};
