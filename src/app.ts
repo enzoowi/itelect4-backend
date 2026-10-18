@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express, {
   type Request,
   type Response,
@@ -5,20 +6,35 @@ import express, {
 } from "express";
 import cors from "cors";
 import mongoose from "mongoose";
+import { connectDB } from "./config/db";
 import { authRouter } from "./routes/auth";
+import { courseRouter } from "./routes/courses";
+import { categoryRouter } from "./routes/categories";
 import { jobRouter } from "./routes/jobs";
 
 export const app = express();
 
-app.use(cors());
+const ALLOWED_ORIGINS = (process.env.CORS_ORIGIN ?? "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter((origin) => origin !== "");
+
+app.use(cors({ origin: ALLOWED_ORIGINS }));
 
 app.use(express.json());
+
+app.use(async (_req: Request, _res: Response, next: NextFunction) => {
+  await connectDB();
+  next();
+});
 
 app.get("/api/health", (_req: Request, res: Response) => {
   res.json({ ok: true, db: mongoose.connection.readyState === 1 });
 });
 
 app.use("/api/auth", authRouter);
+app.use("/api/courses", courseRouter);
+app.use("/api/categories", categoryRouter);
 app.use("/api/jobs", jobRouter);
 
 app.use((req: Request, res: Response) => {
@@ -48,3 +64,5 @@ app.use(
     res.status(500).json({ message: "Something went wrong" });
   },
 );
+
+export default app;
