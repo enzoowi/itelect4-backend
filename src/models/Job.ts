@@ -34,6 +34,11 @@ const jobSchema = new Schema<JobDoc>({
       message: "Status must be Open, InProgress, Completed, or Cancelled"
     },
     default: "Open"
+  },
+
+  category: {
+    type: String,
+    trim: true,
   }
 });
 
