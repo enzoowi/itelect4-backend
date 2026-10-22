@@ -1,4 +1,4 @@
-import { GoogleGenAI, type Content } from "@google/genai";
+import { GoogleGenAI, ApiError, type Content } from "@google/genai";
 import { MODEL, SYSTEM_PROMPT, EXAMPLES, wrap } from "./prompt";
 import {
   reviewSchema,
@@ -47,23 +47,42 @@ function buildContents(description: string): Content[] {
 // turns it into a 502; anything else stays a 500.
 export class AiReplyError extends Error {}
 
+const FALLBACK_MODEL = "gemini-flash-lite-latest";
+
 export async function reviewProject(
   description: string,
 ): Promise<Review> {
-  const response = await getClient().models.generateContent({
-    model: MODEL,
-    contents: buildContents(description),
-    config: {
-      systemInstruction: SYSTEM_PROMPT,
-      // JSON, in exactly this shape. Without these two lines the
-      // reply is prose, and prose cannot be put on a screen field
-      // by field.
-      responseMimeType: "application/json",
-      responseJsonSchema: reviewJsonSchema,
-      // No temperature here, on purpose. Google's guide for the
-      // Gemini 3 models says to leave it at its default of 1.0.
-    },
-  });
+  const contents = buildContents(description);
+  const config = {
+    systemInstruction: SYSTEM_PROMPT,
+    // JSON, in exactly this shape. Without these two lines the
+    // reply is prose, and prose cannot be put on a screen field
+    // by field.
+    responseMimeType: "application/json",
+    responseJsonSchema: reviewJsonSchema,
+    // No temperature here, on purpose. Google's guide for the
+    // Gemini 3 models says to leave it at its default of 1.0.
+  };
+
+  let response;
+  try {
+    response = await getClient().models.generateContent({
+      model: MODEL,
+      contents,
+      config,
+    });
+  } catch (err) {
+    // If the primary model experiences a high-demand 503 spike, fall back seamlessly
+    if (err instanceof ApiError && err.status === 503) {
+      response = await getClient().models.generateContent({
+        model: FALLBACK_MODEL,
+        contents,
+        config,
+      });
+    } else {
+      throw err;
+    }
+  }
 
   // undefined when there is no text at all -- for example a reply
   // that was blocked by Gemini's safety filters.
