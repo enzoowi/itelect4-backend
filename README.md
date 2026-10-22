@@ -41,6 +41,11 @@
 | PATCH | `/api/jobs/:id` | JWT | Update a job |
 | DELETE | `/api/jobs/:id` | JWT | Delete a job |
 
+### AI Review (Gemini)
+| Method | Route | Auth | Description |
+|---|---|---|---|
+| POST | `/api/ai` | JWT | Review a project or job post description via Gemini AI |
+
 ## How to Install and Run
 
 Copy the environment template and fill in your values:
@@ -71,3 +76,4 @@ npm run dev
 | `JWT_SECRET` | Secret key for signing JWT tokens |
 | `PORT` | Port number (default: 4000) |
 | `CORS_ORIGIN` | Allowed frontend origin(s), comma-separated |
+| `GEMINI_API_KEY` | Google Gemini API key (server-side only) |

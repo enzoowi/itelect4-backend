@@ -11,6 +11,7 @@ import { authRouter } from "./routes/auth";
 import { courseRouter } from "./routes/courses";
 import { categoryRouter } from "./routes/categories";
 import { jobRouter } from "./routes/jobs";
+import { aiRouter } from "./routes/ai";
 
 export const app = express();
 
@@ -36,6 +37,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/courses", courseRouter);
 app.use("/api/categories", categoryRouter);
 app.use("/api/jobs", jobRouter);
+app.use("/api/ai", aiRouter);
 
 app.use((req: Request, res: Response) => {
   res.status(404).json({
